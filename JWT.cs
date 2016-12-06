@@ -29,7 +29,10 @@ namespace JWT {
             string headerSerialized = _serialize(header);
             string headerEncoded = _convertToUrlFriendlyBase64(headerSerialized);
             double exp = DateTime.Now.AddMinutes(expirationTimeInMinutes).Subtract(_utc0).TotalSeconds;
-            parameters.Add("exp", exp.ToString());
+            if (parameters.ContainsKey("_exp")) {
+                parameters.Remove("_exp");
+            }
+            parameters.Add("_exp", exp.ToString());
             string tokenInfoSerialized = _serialize(parameters);
             string tokenInfoEncoded = _convertToUrlFriendlyBase64(tokenInfoSerialized);
             string signature = _encrypt(String.Format("{0}.{1}", headerEncoded, tokenInfoEncoded));
@@ -44,7 +47,7 @@ namespace JWT {
             bool _isValid = false;
             bool _hasExpired = true;
             double _expiredByInSec = 0;
-            Dictionary<string, string> _content = new Dictionary<string, string>();
+            var _content = new Dictionary<string, string>();
 
             if (!_isTokenValid(token)) {
                 _isValid = false;
@@ -116,8 +119,8 @@ namespace JWT {
 
         private static bool _hasTokenExpired(string token) {
             string[] parts = token.Split('.');
-            Dictionary<string, string> parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
-            double expirationTime = Convert.ToDouble(parameters["exp"]);
+            var parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
+            double expirationTime = Convert.ToDouble(parameters["_exp"]);
             double iat = DateTime.Now.Subtract(_utc0).TotalSeconds;
             if (expirationTime < iat) {
                 return true;
@@ -127,16 +130,16 @@ namespace JWT {
 
         private static double _tokenExpiredByInSec(string token) {
             string[] parts = token.Split('.');
-            Dictionary<string, string> parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
-            double expirationTime = Convert.ToDouble(parameters["exp"]);
+            var parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
+            double expirationTime = Convert.ToDouble(parameters["_exp"]);
             double iat = DateTime.Now.Subtract(_utc0).TotalSeconds;
             return iat - expirationTime;
         }
 
         private static Dictionary<string, string> _getTokenInfo(string token) {
             string[] parts = token.Split('.');
-            Dictionary<string, string> parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
-            parameters.Remove("exp");
+            var parameters = _deserialize(_decodeUrlFriendlyBase64(parts[1]));
+            parameters.Remove("_exp");
             return parameters;
         }
 
