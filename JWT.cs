@@ -8,7 +8,7 @@ namespace JWT {
     /// <summary>
     /// Token class
     /// </summary>
-    public static class JWTToken {
+    public static class Token {
         
         private static DateTime _utc0 = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
@@ -148,7 +148,7 @@ namespace JWT {
     /// <summary>
     /// Holds token information
     /// </summary>
-    public class ParsingInfo {
+    public struct ParsingInfo {
         public bool IsValid { get; set; }
         public bool HasExpired { get; set; }
         public double ExpiredByInSec { get; set; }
